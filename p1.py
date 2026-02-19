@@ -28,7 +28,7 @@ def lerp(x,y,a):
 
 # From: https://docs.opencv.org/4.x/d5/daf/tutorial_py_histogram_equalization.html
 def correctFrame(frame):
-    cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    #cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     hist,bins = np.histogram(frame.flatten(),256,[0,256])
  
     cdf = hist.cumsum()
@@ -79,6 +79,34 @@ def barrelCusion(frame, param):
     # Apply remap
     return cv2.remap(frame, map_x.astype(np.float32), map_y.astype(np.float32), cv2.INTER_LINEAR)
 
+def bayesDither(frame, param):
+    BAYER_4x4 = (1/16) * np.array([
+        [0,  8,  2, 10],
+        [12, 4, 14, 6 ],
+        [3, 11, 1, 9 ],
+        [15, 7, 13, 5 ]
+    ], dtype=np.float32)
+
+    h, w, _ = frame.shape
+
+    # Get liminance for each pixel
+    lum = (0.2126*frame[:,:,2] +
+           0.7152*frame[:,:,1] +
+           0.0722*frame[:,:,0]) / 255.0
+
+    # Tile bayer matrix to frame extent
+    tiled = np.tile(BAYER_4x4, (h//4 + 1, w//4 + 1))[:h, :w]
+
+    # Apply threshold
+    mask = lum * param*2 > tiled
+
+    # Copy pixels where mask meets threshold
+    out = np.zeros_like(frame)
+    out[mask] = frame[mask]
+
+    return out
+
+
 def nothing(x):
     pass
 
@@ -111,8 +139,8 @@ while True:
     #frame = alien(frame, param, [255, 0, 0]) # Blue skin
     #frame = alien(frame, param, [0, 255, 0]) # Green skin
     #frame = alien(frame, param, [0, 0, 255]) # Red skin
-    frame = barrelCusion(frame, param)
-
+    #frame = barrelCusion(frame, param)
+    #frame = bayesDither(frame, param)
 
 
 
