@@ -33,8 +33,11 @@ def correctFrame(frame):
  
     cdf = hist.cumsum()
 
+    # Mask all pixels with value < 5 
     cdf_m = np.ma.masked_less(cdf,5)
+    # Normalize (MinMax)
     cdf_m = (cdf_m - cdf_m.min())*255/(cdf_m.max()-cdf_m.min())
+    # Replace masked pixels with 0
     cdf_m = np.ma.filled(cdf_m,0).astype('uint8')
 
     corrected = cdf_m[frame]
@@ -60,8 +63,9 @@ def alien(frame, param, color):
     # Format to hsv
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # Define color treshold
-    x = lerp(15,50,param)
-    y = lerp(50,120,param)
+    # https://stackoverflow.com/questions/8753833/exact-skin-color-hsv-range
+    x = lerp(0,50,param)
+    y = lerp(23,68,param)
     lower_skin = np.array([0, x, y], dtype=np.uint8)
     upper_skin = np.array([x, 255, 255], dtype=np.uint8)
     # Mask in range colors
@@ -79,6 +83,7 @@ def barrelCusion(frame, param):
     # Apply remap
     return cv2.remap(frame, map_x.astype(np.float32), map_y.astype(np.float32), cv2.INTER_LINEAR)
 
+# Based from https://github.com/VictorOrrios/victorr.me/blob/main/src/lib/components/backgrounds/filters/BayesDither/fragment.glsl
 def bayesDither(frame, param):
     BAYER_4x4 = (1/16) * np.array([
         [0,  8,  2, 10],
@@ -106,6 +111,26 @@ def bayesDither(frame, param):
 
     return out
 
+def pixelize(frame, param):
+    size = 2**int(lerp(1,6,param))
+    h, w, _ = frame.shape
+    temp = cv2.resize(frame, (int(w/size),int(h/size)), interpolation=cv2.INTER_NEAREST)
+    return cv2.resize(temp, (w,h), interpolation=cv2.INTER_NEAREST)
+    
+def polkaDots(frame, param):
+    h, w, _ = frame.shape
+    size = 2**int(lerp(1,6,param))
+
+    yy, xx = np.meshgrid(np.arange(h), np.arange(w), indexing='ij')
+    frame[yy,xx] = frame[(yy//size)*size,(xx//size)*size]
+    yy_rel = yy - (yy // size) * size
+    xx_rel = xx - (xx // size) * size
+    mask = np.sqrt((yy_rel - size/2)**2 + (xx_rel - size/2)**2) > size/2.5
+
+    frame[mask] = [0,0,0]
+
+    return frame
+    
 
 def nothing(x):
     pass
@@ -130,7 +155,7 @@ while True:
         print("Error: can't read frame")
         break
 
-    cv2.imshow("WebCam Original", frame)
+    #cv2.imshow("WebCam Original", frame)
 
     param = cv2.getTrackbarPos("Parameter","WebCam Filter")
     param /= 100.0
@@ -141,10 +166,10 @@ while True:
     #frame = alien(frame, param, [0, 0, 255]) # Red skin
     #frame = barrelCusion(frame, param)
     #frame = bayesDither(frame, param)
+    #frame = pixelize(frame,param)
+    frame = polkaDots(frame,param)
 
-
-
-
+    
     cv2.imshow("WebCam Filter", frame)
 
     # Wait 1ms   and read q key
