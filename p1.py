@@ -47,7 +47,9 @@ def correctFrame(frame):
     
     return corrected
 
-
+def poster(frame, levels):
+    x = 256//levels
+    return (frame // x)*x
 
 while True:
     ret, frame = cap.read()
@@ -56,8 +58,9 @@ while True:
         break
 
     cv2.imshow("WebCam Original", frame)
-    
+
     #frame = correctFrame(frame)
+    #frame = poster(frame, 8)
 
     cv2.imshow("WebCam Filter", frame)
 
