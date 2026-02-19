@@ -48,8 +48,15 @@ def correctFrame(frame):
     return corrected
 
 def poster(frame, levels):
-    x = 256//levels
+    levels = max(1,levels)
+    x = 255//levels
     return (frame // x)*x
+
+def nothing(x):
+    pass
+
+cv2.namedWindow("WebCam Filter")
+cv2.createTrackbar("Parameter","WebCam Filter",8,32, nothing)
 
 while True:
     ret, frame = cap.read()
@@ -60,7 +67,8 @@ while True:
     cv2.imshow("WebCam Original", frame)
 
     #frame = correctFrame(frame)
-    #frame = poster(frame, 8)
+    param = cv2.getTrackbarPos("Parameter","WebCam Filter")
+    frame = poster(frame, param)
 
     cv2.imshow("WebCam Filter", frame)
 
