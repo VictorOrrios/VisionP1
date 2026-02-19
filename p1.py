@@ -70,11 +70,31 @@ def alien(frame, param, color):
     frame[mask > 0] = color
     return frame
 
+def barrelCusion(frame, param):
+    k1 = (param*2-1) * 1e-5
+    k2 = k1*1e-5
+    map_x = x_grid + xd_rel * (k1 * r2 + k2 * r4)
+    map_y = y_grid + yd_rel * (k1 * r2 + k2 * r4)
+
+    # Apply remap
+    return cv2.remap(frame, map_x.astype(np.float32), map_y.astype(np.float32), cv2.INTER_LINEAR)
+
 def nothing(x):
     pass
 
 cv2.namedWindow("WebCam Filter")
-cv2.createTrackbar("Parameter","WebCam Filter",1,10, nothing)
+cv2.createTrackbar("Parameter","WebCam Filter",1,100, nothing)
+
+# Pre-calculate coordinates for the map
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+xcen = frame_width / 2
+ycen = frame_height / 2
+x_grid, y_grid = np.meshgrid(np.arange(frame_width), np.arange(frame_height))
+xd_rel = x_grid - xcen
+yd_rel = y_grid - ycen
+r2 = xd_rel**2 + yd_rel**2
+r4 = r2**2
 
 while True:
     ret, frame = cap.read()
@@ -85,13 +105,13 @@ while True:
     cv2.imshow("WebCam Original", frame)
 
     param = cv2.getTrackbarPos("Parameter","WebCam Filter")
-    param /= 10.0
+    param /= 100.0
     #frame = correctFrame(frame)
     #frame = poster(frame, param)
     #frame = alien(frame, param, [255, 0, 0]) # Blue skin
     #frame = alien(frame, param, [0, 255, 0]) # Green skin
     #frame = alien(frame, param, [0, 0, 255]) # Red skin
-    
+    frame = barrelCusion(frame, param)
 
 
 
