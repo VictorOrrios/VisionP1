@@ -28,7 +28,6 @@ def lerp(x,y,a):
 
 # From: https://docs.opencv.org/4.x/d5/daf/tutorial_py_histogram_equalization.html
 def correctFrame(frame):
-    #cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     hist,bins = np.histogram(frame.flatten(),256,[0,256])
  
     cdf = hist.cumsum()
@@ -155,11 +154,12 @@ while True:
         print("Error: can't read frame")
         break
 
-    #cv2.imshow("WebCam Original", frame)
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cv2.imshow("WebCam Original", frame)
 
     param = cv2.getTrackbarPos("Parameter","WebCam Filter")
     param /= 100.0
-    #frame = correctFrame(frame)
+    frame = correctFrame(frame)
     #frame = poster(frame, param)
     #frame = alien(frame, param, [255, 0, 0]) # Blue skin
     #frame = alien(frame, param, [0, 255, 0]) # Green skin
@@ -167,7 +167,7 @@ while True:
     #frame = barrelCusion(frame, param)
     #frame = bayesDither(frame, param)
     #frame = pixelize(frame,param)
-    frame = polkaDots(frame,param)
+    #frame = polkaDots(frame,param)
 
     
     cv2.imshow("WebCam Filter", frame)
