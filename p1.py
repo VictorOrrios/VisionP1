@@ -23,6 +23,9 @@ def frameToLum(frame):
     weights = np.array([0.299, 0.587, 0.114])
     return np.dot(frame[..., :3], weights).astype(frame.dtype)
 
+def lerp(x,y,a):
+    return x*(1-a)+y*a
+
 # From: https://docs.opencv.org/4.x/d5/daf/tutorial_py_histogram_equalization.html
 def correctFrame(frame):
     cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -48,11 +51,24 @@ def correctFrame(frame):
     return corrected
 
 def poster(frame, param):
-    param /= 10.0
-    levels = int(np.pow(2,np.trunc(param+param*5)))
+    levels = int(np.pow(2,np.trunc(lerp(1,5,param))))
     print(levels)
     x = 255//levels
     return (frame // x)*x
+
+def alien(frame, param, color):
+    # Format to hsv
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # Define color treshold
+    x = lerp(15,50,param)
+    y = lerp(50,120,param)
+    lower_skin = np.array([0, x, y], dtype=np.uint8)
+    upper_skin = np.array([x, 255, 255], dtype=np.uint8)
+    # Mask in range colors
+    mask = cv2.inRange(hsv, lower_skin, upper_skin)
+    # Color in masked frame
+    frame[mask > 0] = color
+    return frame
 
 def nothing(x):
     pass
@@ -68,9 +84,18 @@ while True:
 
     cv2.imshow("WebCam Original", frame)
 
-    #frame = correctFrame(frame)
     param = cv2.getTrackbarPos("Parameter","WebCam Filter")
-    frame = poster(frame, param)
+    param /= 10.0
+    #frame = correctFrame(frame)
+    #frame = poster(frame, param)
+    #frame = alien(frame, param, [255, 0, 0]) # Blue skin
+    #frame = alien(frame, param, [0, 255, 0]) # Green skin
+    #frame = alien(frame, param, [0, 0, 255]) # Red skin
+    
+
+
+
+
 
     cv2.imshow("WebCam Filter", frame)
 
