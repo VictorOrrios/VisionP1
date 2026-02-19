@@ -47,8 +47,10 @@ def correctFrame(frame):
     
     return corrected
 
-def poster(frame, levels):
-    levels = max(1,levels)
+def poster(frame, param):
+    param /= 10.0
+    levels = int(np.pow(2,np.trunc(param+param*5)))
+    print(levels)
     x = 255//levels
     return (frame // x)*x
 
@@ -56,7 +58,7 @@ def nothing(x):
     pass
 
 cv2.namedWindow("WebCam Filter")
-cv2.createTrackbar("Parameter","WebCam Filter",8,32, nothing)
+cv2.createTrackbar("Parameter","WebCam Filter",1,10, nothing)
 
 while True:
     ret, frame = cap.read()
