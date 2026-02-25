@@ -2,8 +2,11 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-cap = cv2.VideoCapture(0)
-
+#cap = cv2.VideoCapture(0)
+lena = cv2.imread("lena.png")
+if lena is None:
+    print("Error: can't load lena.png")
+    exit(1)
 
 if not cap.isOpened():
     print("Error: can't open webcam!")
@@ -168,10 +171,12 @@ r2 = xd_rel**2 + yd_rel**2
 r4 = r2**2
 
 while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Error: can't read frame")
-        break
+    #ret, frame = cap.read()
+    #if not ret:
+    #    print("Error: can't read frame")
+    #    break
+    frame = lena.copy()
+
 
     #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     cv2.imshow("WebCam Original", frame)
