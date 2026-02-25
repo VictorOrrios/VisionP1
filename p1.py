@@ -2,15 +2,19 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-#cap = cv2.VideoCapture(0)
-lena = cv2.imread("lena.png")
-if lena is None:
-    print("Error: can't load lena.png")
-    exit(1)
-
+# Cap version
+cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("Error: can't open webcam!")
     exit(1)
+
+# Lena version
+#lena = cv2.imread("lena.png")
+#if lena is None:
+#    print("Error: can't load lena.png")
+#    exit(1)
+
+
 
 print("Presiona 'q' para salir")
 
@@ -58,7 +62,6 @@ def correctFrame(frame):
 
 def poster(frame, param):
     levels = int(np.pow(2,np.trunc(lerp(1,5,param))))
-    print(levels)
     x = 255//levels
     return (frame // x)*x
 
@@ -160,8 +163,11 @@ cv2.namedWindow("WebCam Filter")
 cv2.createTrackbar("Parameter","WebCam Filter",1,100, nothing)
 
 # Pre-calculate coordinates for the map
+# Cap version
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+# Lena version
+#frame_height, frame_width, _ = lena.shape
 xcen = frame_width / 2
 ycen = frame_height / 2
 x_grid, y_grid = np.meshgrid(np.arange(frame_width), np.arange(frame_height))
@@ -171,11 +177,14 @@ r2 = xd_rel**2 + yd_rel**2
 r4 = r2**2
 
 while True:
-    #ret, frame = cap.read()
-    #if not ret:
-    #    print("Error: can't read frame")
-    #    break
-    frame = lena.copy()
+    # Cap version
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: can't read frame")
+        break
+    
+    # Lena version
+    #frame = lena.copy()
 
 
     #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -183,7 +192,7 @@ while True:
 
     param = cv2.getTrackbarPos("Parameter","WebCam Filter")
     param /= 100.0
-    #frame = correctFrame(frame)
+    frame = correctFrame(frame)
     #frame = poster(frame, param)
     #frame = alien(frame, param, [255, 0, 0]) # Blue skin
     #frame = alien(frame, param, [0, 255, 0]) # Green skin
@@ -192,7 +201,7 @@ while True:
     #frame = bayesDither(frame, param)
     #frame = pixelize(frame,param)
     #frame = polkaDots(frame,param)
-    frame = lenticular(frame,param)
+    #frame = lenticular(frame,param)
 
     
     cv2.imshow("WebCam Filter", frame)
@@ -202,4 +211,4 @@ while True:
         break
 
 cv2.destroyAllWindows()
-cap.release()
+lena.release()
